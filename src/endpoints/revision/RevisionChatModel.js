@@ -6,11 +6,7 @@
 "use strict";
 
 export default class RevisionChatModel {
-  static getRevisionChatModel =  (
-    systemPrompt,
-    userPrompt,
-    responseSchema
-  ) => {
+  static getRevisionChatModel = (systemPrompt, userPrompt, responseSchema) => {
     const model = {
       model: "llama3.1:8b-instruct-fp16",
       messages: [systemPrompt, userPrompt],
@@ -20,7 +16,11 @@ export default class RevisionChatModel {
         temperature: 0,
       },
     };
-    console.log("model\n\n", model, "\n\n")
+    console.log("model\n\n", model, "\n\n");
     return model;
+  };
+
+  static getModelName = () => {
+    return "llama3.1:8b-instruct-fp16";
   };
 }

@@ -5,6 +5,8 @@
  */
 "use strict";
 
+import { AutoTokenizer } from "@huggingface/transformers";
+
 const OLLAMA_CHAT_API = process.env.OLLAMA_CHAT_API;
 
 export default class RevisionChatApiAdapter {
@@ -53,5 +55,12 @@ export default class RevisionChatApiAdapter {
         return null;
       });
     return content;
+  };
+
+  static getTokenCount = async (text, modelname) => {
+    const tokenizer = await AutoTokenizer.from_pretrained(modelname);
+    console.log("tokenizer", tokenizer);
+    const tokens = tokenizer.tokenize(text);
+    return tokens.length;
   };
 }

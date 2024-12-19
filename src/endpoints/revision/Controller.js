@@ -31,11 +31,36 @@ export default class Controller {
       );
 
       const response = await RevisionChatApiAdapter.invokeChatApi(model);
+      console.log("response", response);
       res.status(200).json(response);
-
     } catch (error) {
       console.log(error.message);
       res.status(500).send("Error creating the revision.");
+    }
+  };
+
+  static postRevisionMeta = async (req, res) => {
+    // return a metadata object:
+    // {tokenCount: Number}
+    // will add more if/when needed
+
+    console.log("Controller.postRevisionMeta() fired");
+
+    try {
+      const text = req.body.text;
+      const modelname = RevisionChatModel.getModelName();
+
+      console.log("modelname", modelname);
+      console.log("text", text);
+
+      const tokenCount = await RevisionChatApiAdapter.getTokenCount(
+        text,
+        modelname
+      );
+      res.status(200).json({ tokenCount });
+    } catch (error) {
+      console.log(error.message);
+      res.status(500).send("Error fetching token count.");
     }
   };
 }
