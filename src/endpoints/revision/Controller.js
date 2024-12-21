@@ -43,8 +43,10 @@ export default class Controller {
     // return a metadata object:
     // {tokenCount: Number}
     // will add more if/when needed
-
-    console.log("Controller.postRevisionMeta() fired");
+    //
+    // NOTE: COULD NOT GET THIS TO WORK. NPM LIB USES HUGGING FACE
+    // BUT HF DID NOT SUPPORT THE MODEL
+    // SO THIS METHOD WAS NEVER USED
 
     try {
       const text = req.body.text;

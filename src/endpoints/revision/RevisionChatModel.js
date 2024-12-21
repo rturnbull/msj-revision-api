@@ -5,10 +5,12 @@
  */
 "use strict";
 
+const LL_MODEL = process.env.LL_MODEL;
+
 export default class RevisionChatModel {
   static getRevisionChatModel = (systemPrompt, userPrompt, responseSchema) => {
     const model = {
-      model: "llama3.1:8b-instruct-fp16",
+      model: LL_MODEL,
       messages: [systemPrompt, userPrompt],
       stream: false,
       format: "json",
@@ -21,6 +23,6 @@ export default class RevisionChatModel {
   };
 
   static getModelName = () => {
-    return "llama3.1:8b-instruct-fp16";
+    return LL_MODEL;
   };
 }
