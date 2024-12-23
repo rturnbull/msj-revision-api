@@ -16,6 +16,7 @@ export default class RevisionChatModel {
       format: "json",
       options: {
         temperature: 0,
+        keep_alive:0,
       },
     };
     console.log("model\n\n", model, "\n\n");
