@@ -1,6 +1,7 @@
 /*
  * (C) 2024 - present Robert Turnbull
  * SPDX-License-Identifier: N/A
+ * 
  */
 "use strict";
 import {} from "dotenv/config";
