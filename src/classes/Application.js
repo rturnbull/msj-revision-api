@@ -12,7 +12,7 @@ import revisionRouter from "../endpoints/revision/Router.js"
 // routers
 import DefaultRouter from "../../src/endpoints/index.js";
 
-const APP_URL = process.env.APP_URL;
+//const APP_URL = process.env.APP_URL;
 const REVISION_URL = process.env.APP_URL + "/revision";
 
 export class Application {
