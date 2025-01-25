@@ -31,7 +31,11 @@ export default class Controller {
       );
 
       const response = await RevisionChatApiAdapter.invokeChatApi(model);
-      //console.log("response", response);
+      
+      console.log("response", response);
+
+      if (!response) throw "Revision response was null."
+      
       res.status(200).json(response);
     } catch (error) {
       console.log(error.message);
