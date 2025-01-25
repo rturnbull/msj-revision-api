@@ -38,7 +38,7 @@ export default class Controller {
       
       res.status(200).json(response);
     } catch (error) {
-      console.log(error.message);
+      console.log("Error was caught:",error.message);
       res.status(500).send("Error creating the revision.");
     }
   };

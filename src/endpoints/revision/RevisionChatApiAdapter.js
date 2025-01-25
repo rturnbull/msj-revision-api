@@ -5,10 +5,33 @@
  */
 "use strict";
 
+import axios from "axios";
+
 const OLLAMA_CHAT_API = process.env.OLLAMA_CHAT_API;
 
 export default class RevisionChatApiAdapter {
+  //
   static invokeChatApi = async (model) => {
+    try {
+      const response = await axios.post(
+        OLLAMA_CHAT_API,
+        JSON.stringify(model),
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      return response.data;
+    } catch (error) {
+      console.log(
+        "ERROR in RevisionChatApiAdapter.invokeChatApi(model)\n",
+        error.message
+      );
+    }
+  };
+
+  static invokeChatApi1 = async (model) => {
     try {
       const response = await fetch(OLLAMA_CHAT_API, {
         method: "POST",
@@ -54,5 +77,4 @@ export default class RevisionChatApiAdapter {
       });
     return content;
   };
-
 }
