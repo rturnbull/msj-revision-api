@@ -22,12 +22,13 @@ export default class RevisionChatApiAdapter {
           },
         }
       );
-      return response.data;
+      return response.data.message;
     } catch (error) {
       console.log(
         "ERROR in RevisionChatApiAdapter.invokeChatApi(model)\n",
         error.message
       );
+      return error.message;
     }
   };
 

@@ -21,9 +21,7 @@ export default class Controller {
         operand
       );
       const systemPrompt = RevisionChatConfiguration.getSystemPrompt();
-
       const responseSchema = RevisionChatConfiguration.getResponseSchema();
-
       const model = RevisionChatModel.getRevisionChatModel(
         systemPrompt,
         userPrompt,
@@ -31,14 +29,11 @@ export default class Controller {
       );
 
       const response = await RevisionChatApiAdapter.invokeChatApi(model);
-      
-      console.log("response", response);
+      if (!response) throw "Revision response was null.";
 
-      if (!response) throw "Revision response was null."
-      
       res.status(200).json(response);
     } catch (error) {
-      console.log("Error was caught:",error.message);
+      console.log("Error was caught:", error.message);
       res.status(500).send("Error creating the revision.");
     }
   };
