@@ -7,7 +7,7 @@ import {} from "dotenv/config";
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
-import revisionRouter from "../endpoints/revision/Router.js"
+import revisionRouter from "../endpoints/revision/Router.js";
 
 // routers
 import DefaultRouter from "../../src/endpoints/index.js";
@@ -19,7 +19,14 @@ export class Application {
   static getApp = () => {
     const app = express();
 
-    app.use(cors());
+    app.use(
+      cors({
+        origin: ["https://mainstreetjournal.app", "http://localhost:3000"],
+        methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: true,
+      })
+    );
     app.use(morgan("combined"));
     app.use(express.json());
 
