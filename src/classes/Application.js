@@ -21,7 +21,11 @@ export class Application {
 
     app.use(
       cors({
-        origin: ["https://mainstreetjournal.app", "http://localhost:3000"],
+        origin: [
+          "https://mainstreetjournal.app",
+          "https://cms.mainstreetjournal.app",
+          "http://localhost:3000",
+        ],
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
         allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
