@@ -12,6 +12,7 @@ import RevisionChatModel from "./RevisionChatModel.js";
 export default class Controller {
   //
   static postRevision = async (req, res) => {
+    console.log("Controller.postRevision(req, res)");
     try {
       // TODO: validate that we got the right values
       const { operator, operand } = req.body;
@@ -28,12 +29,18 @@ export default class Controller {
         responseSchema
       );
 
+      console.log(
+        "Preparing to invoke RevisionChatApiAdapter.invokeChatApi(model)"
+      );
       const response = await RevisionChatApiAdapter.invokeChatApi(model);
-      if (!response) throw "Revision response was null.";
+      if (!response)
+        throw "RevisionChatApiAdapter.invokeChatApi(model) returned null.";
+
+      console.log(response);
 
       res.status(200).json(response);
     } catch (error) {
-      console.log("Error was caught:", error.message);
+      console.log("Error:", error.message);
       res.status(500).send("Error creating the revision.");
     }
   };

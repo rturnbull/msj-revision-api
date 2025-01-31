@@ -13,7 +13,7 @@ export default class Router {
   //
   static getRouter = () => {
     const router = express.Router();
-    router.post("/", [cors()], Controller.postRevision);
+    router.post("/", Controller.postRevision);
     return router;
   };
 }

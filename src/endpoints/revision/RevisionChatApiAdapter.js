@@ -13,6 +13,8 @@ export default class RevisionChatApiAdapter {
   //
   static invokeChatApi = async (model) => {
     try {
+      console.log(model);
+
       const response = await axios.post(
         OLLAMA_CHAT_API,
         JSON.stringify(model),
@@ -32,7 +34,7 @@ export default class RevisionChatApiAdapter {
     }
   };
 
-  static invokeChatApi1 = async (model) => {
+  /*   static invokeChatApi1 = async (model) => {
     try {
       const response = await fetch(OLLAMA_CHAT_API, {
         method: "POST",
@@ -46,9 +48,9 @@ export default class RevisionChatApiAdapter {
     } catch (error) {
       console.log(error.message);
     }
-  };
+  }; */
 
-  static invokeCompletionApi = async (model) => {
+  /*   static invokeCompletionApi = async (model) => {
     const content = await fetch(OLLAMA_API_URL, {
       method: "POST",
       headers: {
@@ -77,5 +79,5 @@ export default class RevisionChatApiAdapter {
         return null;
       });
     return content;
-  };
+  }; */
 }

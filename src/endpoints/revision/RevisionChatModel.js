@@ -9,6 +9,9 @@ const LL_MODEL = process.env.LL_MODEL;
 
 export default class RevisionChatModel {
   static getRevisionChatModel = (systemPrompt, userPrompt) => {
+    console.log(
+      "RevisionChatModel.getRevisionChatModel(systemPrompt, userPrompt)"
+    );
     const model = {
       model: LL_MODEL,
       messages: [systemPrompt, userPrompt],
@@ -16,11 +19,11 @@ export default class RevisionChatModel {
       format: "json",
       options: {
         temperature: 0,
-        keep_alive:0,
         num_ctx: 32000,
+        keep_alive: -1,
       },
     };
-    console.log("model\n\n", model, "\n\n");
+    /* console.log("model\n\n", model, "\n\n"); */
     return model;
   };
 
