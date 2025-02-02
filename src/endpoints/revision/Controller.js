@@ -28,16 +28,10 @@ export default class Controller {
         userPrompt,
         responseSchema
       );
-
-      console.log(
-        "Preparing to invoke RevisionChatApiAdapter.invokeChatApi(model)"
-      );
       const response = await RevisionChatApiAdapter.invokeChatApi(model);
-      if (!response)
-        throw "RevisionChatApiAdapter.invokeChatApi(model) returned null.";
-
-      console.log(response);
-
+      if (!response) {
+        res.status(500);
+      }
       res.status(200).json(response);
     } catch (error) {
       console.log("Error:", error.message);
