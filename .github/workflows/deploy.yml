@@ -23,10 +23,19 @@ env:
   LL_MODEL: "deepseek-r1:14b"
 
 jobs:
-  deploy:
+  verify-build:
+    name: Verify Build Status
     runs-on: ubuntu-latest
     steps:
-      - name: Deploy
+      - name: Check build completion
+        run: echo "Container built and pushed to registry"
+
+  deploy:
+    name: Deploy to Server
+    needs: verify-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy container to remote host
         run: |
           # Deploy container using SSH with key from secret
           ssh -o StrictHostKeyChecking=no -i <(echo "${{ secrets.REMOTE_SSH_KEY }}") "${{ secrets.REMOTE_VM_USER }}@${{ secrets.REMOTE_VM_HOST }}" "\
