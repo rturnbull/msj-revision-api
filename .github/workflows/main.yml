@@ -59,29 +59,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-push
     steps:
-      # Set up SSH key with verbose output
-      - name: Set up SSH
+      # Set up SSH key and test connection
+      - name: Set up SSH and test connection
         run: |
           mkdir -p ~/.ssh
-          echo "Setting up SSH key..."
           echo "${{ secrets.REMOTE_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          eval $(ssh-agent -s)
-          echo "Adding key to agent..."
-          ssh-add -v ~/.ssh/deploy_key
-          echo "Key added to agent"
-          
-      # Test SSH connection with verbose output
-      - name: Test connection
-        run: |
-          echo "Testing SSH connection..."
-          echo "User: ${{ secrets.REMOTE_VM_USER }}"
-          echo "Host: ${{ secrets.REMOTE_VM_HOST }}"
-          if [ -z "${{ secrets.REMOTE_VM_USER }}" ] || [ -z "${{ secrets.REMOTE_VM_HOST }}" ]; then
-            echo "Error: REMOTE_VM_USER or REMOTE_VM_HOST is empty"
-            exit 1
-          fi
-          ssh -v -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key "${{ secrets.REMOTE_VM_USER }}@${{ secrets.REMOTE_VM_HOST }}" "echo Connection successful"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key "${{ secrets.REMOTE_VM_USER }}@${{ secrets.REMOTE_VM_HOST }}" "echo Connection successful"
 
       # Deploy if connection test succeeds
       - name: Deploy
@@ -113,7 +97,6 @@ jobs:
             
             echo "Deployment complete"' > deploy.sh
 
-          # Make script executable and run it via SSH
-          chmod +x deploy.sh
+          # Copy and execute deployment script
           scp -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key deploy.sh "${{ secrets.REMOTE_VM_USER }}@${{ secrets.REMOTE_VM_HOST }}:~/"
-          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key "${{ secrets.REMOTE_VM_USER }}@${{ secrets.REMOTE_VM_HOST }}" "bash ~/deploy.sh"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key "${{ secrets.REMOTE_VM_USER }}@${{ secrets.REMOTE_VM_HOST }}" "chmod +x ~/deploy.sh && ~/deploy.sh"
