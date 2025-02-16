@@ -28,10 +28,14 @@ jobs:
     steps:
       - name: Deploy
         run: |
-          # Deploy container using SSH with key from secret
-          ssh -o StrictHostKeyChecking=no -i <(echo "${{ secrets.REMOTE_SSH_KEY }}") "${{ secrets.REMOTE_VM_USER }}@${{ secrets.REMOTE_VM_HOST }}" "\
+          # Start ssh-agent and add key
+          eval $(ssh-agent)
+          ssh-add - <<< "${{ secrets.REMOTE_SSH_KEY }}"
+
+          # Deploy container
+          ssh -o StrictHostKeyChecking=no "${{ secrets.REMOTE_VM_USER }}@${{ secrets.REMOTE_VM_HOST }}" "\
             docker rm -f ${{ env.CONTAINER_NAME }} || true && \
-            docker pull ${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} && \
+            docker pull ${{ env.REGISTRY_URL }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} && \
             docker run -d \
               --name ${{ env.CONTAINER_NAME }} \
               -p ${{ env.HOST_PORT }}:${{ env.CONTAINER_PORT }} \
@@ -41,4 +45,4 @@ jobs:
               -e APP_URL="${{ env.APP_URL }}" \
               -e OLLAMA_CHAT_API="${{ env.OLLAMA_CHAT_API }}" \
               -e LL_MODEL="${{ env.LL_MODEL }}" \
-              ${{ env.REGISTRY_URL }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
+              ${{ env.REGISTRY_URL }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}"
