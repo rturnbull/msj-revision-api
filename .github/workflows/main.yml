@@ -1,22 +1,119 @@
-name: Docker Image CI
+# Required GitHub Secrets:
+# Docker Registry Access:
+# - DOCKER_USERNAME: Docker registry username
+# - GH_ACCESS_TOKEN: GitHub access token for container registry
+#
+# Remote Server Access:
+# - REMOTE_VM_HOST: Remote server hostname/IP
+# - REMOTE_VM_USER: Remote server SSH username
+# - REMOTE_SSH_KEY: SSH private key for remote server access
+#
+
+name: Build, Push and Deploy Container Image
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main # Trigger on main branch push, modify as needed
 
 env:
+  # Container Configuration
   CONTAINER_NAME: msj-revision-api
+  IMAGE_NAME: msj-revision-api
+  REGISTRY_URL: ghcr.io
+  IMAGE_TAG: latest
+  HOST_PORT: 8080          # Port on the host machine
+  CONTAINER_PORT: 8080     # Port exposed by the container
 
 jobs:
-  build:
+  build-push:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Log in to GITHUB Docker Registry
-        run: docker login --username ${{ secrets.GH_ACCESS_TOKEN }} --password ${{ secrets.GH_ACCESS_TOKEN }} ghcr.io
-      - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag ghcr.io/rturnbull/$CONTAINER_NAME:latest
-      - name: Push the latest Docker image
-        run: docker push ghcr.io/rturnbull/$CONTAINER_NAME:latest
-        
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      # Log in to GitHub Container Registry
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY_URL }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build the Docker image
+      - name: Build Docker image
+        run: |
+          docker build -t ${{ env.REGISTRY_URL }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} .
+
+      # Push Docker image to GitHub Packages
+      - name: Push Docker image
+        run: |
+          docker push ${{ env.REGISTRY_URL }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-push
+    steps:
+      # Set up SSH key with verbose output
+      - name: Set up SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "Setting up SSH key..."
+          echo "${{ secrets.REMOTE_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          eval $(ssh-agent -s)
+          echo "Adding key to agent..."
+          ssh-add -v ~/.ssh/deploy_key
+          echo "Key added to agent"
+          
+      # Test SSH connection with verbose output
+      - name: Test connection
+        run: |
+          echo "Testing SSH connection..."
+          echo "User: ${{ secrets.REMOTE_VM_USER }}"
+          echo "Host: ${{ secrets.REMOTE_VM_HOST }}"
+          if [ -z "${{ secrets.REMOTE_VM_USER }}" ] || [ -z "${{ secrets.REMOTE_VM_HOST }}" ]; then
+            echo "Error: REMOTE_VM_USER or REMOTE_VM_HOST is empty"
+            exit 1
+          fi
+          ssh -v -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key "${{ secrets.REMOTE_VM_USER }}@${{ secrets.REMOTE_VM_HOST }}" "echo Connection successful"
+
+      # Deploy if connection test succeeds
+      - name: Deploy
+        if: success()
+        run: |
+          echo "Starting deployment..."
+          # Create deployment script
+          echo '#!/bin/bash
+            echo "Removing existing container..."
+            docker rm -f ${{ env.CONTAINER_NAME }} || true
+            
+            echo "Removing old image..."
+            docker images ${{ env.REGISTRY_URL }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }} -q | xargs -r docker rmi -f
+            
+            echo "Pulling new image..."
+            docker pull ${{ env.REGISTRY_URL }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            
+            echo "Starting new container..."
+            docker run -d \
+              --name ${{ env.CONTAINER_NAME }} \
+              -p ${{ env.HOST_PORT }}:${{ env.CONTAINER_PORT }} \
+              -e APP_NAME=msj-revision-api /
+              -e APP_VERSION=1.0.0 /
+              -e APP_PORT=8085 /
+              -e APP_URL=/api/v1 /
+              -e OLLAMA_CHAT_API=https://ollama.srvd.dev/api/chat /
+              -e LL_MODEL=deepseek-r1:14b /
+              ${{ env.REGISTRY_URL }}/${{ github.repository_owner }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            
+            echo "Deployment complete"' > deploy.sh
+
+          # Make script executable and run it via SSH
+          chmod +x deploy.sh
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key deploy.sh "${{ secrets.REMOTE_VM_USER }}@${{ secrets.REMOTE_VM_HOST }}:~/"
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key "${{ secrets.REMOTE_VM_USER }}@${{ secrets.REMOTE_VM_HOST }}" "bash ~/deploy.sh"
